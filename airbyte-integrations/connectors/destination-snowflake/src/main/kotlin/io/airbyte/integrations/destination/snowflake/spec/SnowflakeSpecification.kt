@@ -21,13 +21,17 @@ import jakarta.inject.Singleton
 open class SnowflakeSpecification : ConfigurationSpecification() {
     @get:JsonSchemaTitle("Host")
     @get:JsonPropertyDescription(
-        "Enter your Snowflake account's <a href=\"https://docs.snowflake.com/en/user-guide/admin-account-identifier.html#using-an-account-locator-as-an-identifier\">locator</a> (in the format <account_locator>.<region>.<cloud>.snowflakecomputing.com)"
+        "Enter your Snowflake account's <a href=\"https://docs.snowflake.com/en/user-guide/admin-account-identifier.html#using-an-account-locator-as-an-identifier\">locator</a> " +
+            "(in the format <account_locator>.<region>.<cloud>.snowflakecomputing.com). " +
+            "If you are using a custom proxy or gateway that routes Snowflake connections (e.g., a corporate proxy, custom gateway, or DNS alias), " +
+            "you may provide the full proxy hostname here instead (e.g., accountname.proxy.example.com). " +
+            "The proxy must implement the Snowflake JDBC protocol."
     )
     @get:JsonProperty("host")
     @get:JsonSchemaInject(
         json =
-            """{"group": "connection", "order": 0, "examples":["accountname.us-east-2.aws.snowflakecomputing.com", "accountname.snowflakecomputing.com"], "pattern": "^(http(s)?:\\/\\/)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.(snowflakecomputing\\.com|localstack\\.cloud))$",
-        "pattern_descriptor": "{account_name}.snowflakecomputing.com or {accountname}.{aws_location}.aws.snowflakecomputing.com"}"""
+            """{"group": "connection", "order": 0, "examples":["accountname.us-east-2.aws.snowflakecomputing.com", "accountname.snowflakecomputing.com", "accountname.proxy.example.com"], "pattern": "^(http(s)?:\\/\\/)?([^./?#]+\\.)+[^./?#]+$",
+        "pattern_descriptor": "{account_name}.snowflakecomputing.com, {accountname}.{region}.{cloud}.snowflakecomputing.com, or a custom proxy host like {accountname}.proxy.example.com"}"""
     )
     val host: String = ""
 
