@@ -65,6 +65,17 @@ class SnowflakeSourceConfigurationSpecification : ConfigurationSpecification() {
     )
     lateinit var host: String
 
+    @JsonProperty("use_custom_host")
+    @JsonSchemaTitle("Use Custom Host")
+    @JsonSchemaInject(json = """{"order":1.5}""")
+    @JsonSchemaDefault("false")
+    @JsonPropertyDescription(
+        "Enable this option to connect through a custom proxy or gateway hostname that does not end with snowflakecomputing.com. " +
+            "Only enable this if you are routing Snowflake traffic through a corporate proxy, custom gateway, or DNS alias " +
+            "that implements the Snowflake JDBC protocol. When disabled (default), only official Snowflake domains are accepted."
+    )
+    var useCustomHost: Boolean? = false
+
     @JsonProperty("role")
     @JsonSchemaTitle("Role")
     @JsonPropertyDescription("The role you created for Airbyte to access Snowflake.")

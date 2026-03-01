@@ -35,6 +35,16 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     )
     val host: String = ""
 
+    @get:JsonSchemaTitle("Use Custom Host")
+    @get:JsonPropertyDescription(
+        "Enable this option to connect through a custom proxy or gateway hostname that does not end with snowflakecomputing.com. " +
+            "Only enable this if you are routing Snowflake traffic through a corporate proxy, custom gateway, or DNS alias " +
+            "that implements the Snowflake JDBC protocol. When disabled (default), only official Snowflake domains are accepted."
+    )
+    @get:JsonProperty("use_custom_host")
+    @get:JsonSchemaInject(json = """{"group": "connection", "order": 0.5}""")
+    val useCustomHost: Boolean? = false
+
     @get:JsonSchemaTitle("Role")
     @get:JsonPropertyDescription(
         "Enter the <a href=\"https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles\">role</a> that you want to use to access Snowflake"

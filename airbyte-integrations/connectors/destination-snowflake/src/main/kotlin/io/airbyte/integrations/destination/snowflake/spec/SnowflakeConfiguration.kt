@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake.spec
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.airbyte.cdk.load.table.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
@@ -38,9 +39,23 @@ data class UsernamePasswordAuthConfiguration(
 @Singleton
 class SnowflakeConfigurationFactory :
     DestinationConfigurationFactory<SnowflakeSpecification, SnowflakeConfiguration> {
+    
+    companion object {
+        private val SNOWFLAKE_HOST_PATTERN = "^.*\\.(snowflakecomputing\\.com|localstack\\.cloud)$".toRegex(RegexOption.IGNORE_CASE)
+    }
+    
     override fun makeWithoutExceptionHandling(
         pojo: SnowflakeSpecification
     ): SnowflakeConfiguration {
+        // Validate host against allowed domains unless custom host is explicitly enabled
+        val useCustomHost = pojo.useCustomHost ?: false
+        if (!useCustomHost && !SNOWFLAKE_HOST_PATTERN.matches(pojo.host)) {
+            throw ConfigErrorException(
+                "Host '${pojo.host}' must end with snowflakecomputing.com or localstack.cloud. " +
+                "If you need to use a custom proxy or gateway, enable the 'Use Custom Host' option."
+            )
+        }
+        
         val authTypeConfig =
             when (pojo.credentials) {
                 is KeyPairAuthSpecification -> {
