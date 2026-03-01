@@ -57,9 +57,24 @@ class SnowflakeSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaTitle("Server URL")
     @JsonSchemaInject(json = """{"order":1}""")
     @JsonPropertyDescription(
-        "The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com)."
+        "The host domain of the Snowflake instance (e.g. accountname.snowflakecomputing.com or " +
+            "accountname.region.cloud.snowflakecomputing.com). If you are using a custom proxy or gateway " +
+            "that routes Snowflake connections (e.g., a corporate proxy, custom gateway, or DNS alias), " +
+            "you may provide the full proxy hostname instead (e.g., accountname.proxy.example.com). " +
+            "The proxy must implement the Snowflake JDBC protocol."
     )
     lateinit var host: String
+
+    @JsonProperty("use_custom_host")
+    @JsonSchemaTitle("Use Custom Host")
+    @JsonSchemaInject(json = """{"order":1.5}""")
+    @JsonSchemaDefault("false")
+    @JsonPropertyDescription(
+        "Enable this option to connect through a custom proxy or gateway hostname that does not end with snowflakecomputing.com. " +
+            "Only enable this if you are routing Snowflake traffic through a corporate proxy, custom gateway, or DNS alias " +
+            "that implements the Snowflake JDBC protocol. When disabled (default), only official Snowflake domains are accepted."
+    )
+    var useCustomHost: Boolean? = false
 
     @JsonProperty("role")
     @JsonSchemaTitle("Role")

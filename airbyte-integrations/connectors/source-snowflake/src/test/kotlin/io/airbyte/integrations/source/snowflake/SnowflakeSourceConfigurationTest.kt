@@ -182,6 +182,58 @@ class SnowflakeSourceConfigurationTest {
     }
 
     @Test
+    fun testCustomProxyHostname() {
+        // Verify that a non-snowflakecomputing.com proxy hostname is accepted and used as-is in
+        // the JDBC URL when use_custom_host is enabled. This supports custom proxies, gateways,
+        // and DNS aliases that implement the Snowflake JDBC protocol (see GitHub issue #37510).
+        val proxyHost = "myaccount.proxy.example.com"
+        val spec =
+            SnowflakeSourceConfigurationSpecification().apply {
+                host = proxyHost
+                useCustomHost = true // Enable custom host to bypass standard validation
+                role = "TEST_ROLE"
+                warehouse = "TEST_WAREHOUSE"
+                database = "TEST_DATABASE"
+                credentials =
+                    UsernamePasswordCredentialsSpecification(
+                        username = "testuser",
+                        password = "testpass"
+                    )
+            }
+
+        val config = factory.makeWithoutExceptionHandling(spec)
+
+        // The custom host must be propagated verbatim — no snowflakecomputing.com substitution.
+        assertEquals(proxyHost, config.realHost)
+        // The JDBC URL format must embed the host exactly as provided.
+        assertEquals("jdbc:snowflake://%s", config.jdbcUrlFmt)
+    }
+
+    @Test
+    fun testCustomHostnameRejectedWithoutFlag() {
+        // Verify that custom hostnames are rejected when use_custom_host is false or not set
+        val spec =
+            SnowflakeSourceConfigurationSpecification().apply {
+                host = "myaccount.proxy.example.com"
+                useCustomHost = false // Explicitly disable (also the default)
+                role = "TEST_ROLE"
+                warehouse = "TEST_WAREHOUSE"
+                database = "TEST_DATABASE"
+                credentials =
+                    UsernamePasswordCredentialsSpecification(
+                        username = "testuser",
+                        password = "testpass"
+                    )
+            }
+
+        val exception = assertThrows(ConfigErrorException::class.java) {
+            factory.makeWithoutExceptionHandling(spec)
+        }
+        assertTrue(exception.message?.contains("must end with snowflakecomputing.com or localstack.cloud") == true)
+        assertTrue(exception.message?.contains("Use Custom Host") == true)
+    }
+
+    @Test
     fun testInvalidConfiguration() {
         // Test that invalid configurations throw appropriate errors
         val spec =

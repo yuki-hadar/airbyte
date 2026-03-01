@@ -58,11 +58,21 @@ class SnowflakeSourceConfigurationFactory :
 
     companion object {
         private const val PRIVATE_KEY_FILE_NAME = "rsa_key.p8"
+        private val SNOWFLAKE_HOST_PATTERN = "^.*\\.(snowflakecomputing\\.com|localstack\\.cloud)$".toRegex(RegexOption.IGNORE_CASE)
     }
 
     override fun makeWithoutExceptionHandling(
         pojo: SnowflakeSourceConfigurationSpecification,
     ): SnowflakeSourceConfiguration {
+        // Validate host against allowed domains unless custom host is explicitly enabled
+        val useCustomHost = pojo.useCustomHost ?: false
+        if (!useCustomHost && !SNOWFLAKE_HOST_PATTERN.matches(pojo.host)) {
+            throw ConfigErrorException(
+                "Host '${pojo.host}' must end with snowflakecomputing.com or localstack.cloud. " +
+                "If you need to use a custom proxy or gateway, enable the 'Use Custom Host' option."
+            )
+        }
+        
         val realHost: String = pojo.host
         val jdbcProperties = mutableMapOf<String, String>()
 
